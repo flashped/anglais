@@ -1,31 +1,995 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Spiderman</title>
-    <script>
-        // Fonction pour récupérer l'état de l'image depuis le serveur
-        function checkForImage() {
-            fetch('/show-image')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.showImage) {
-                        document.getElementById("imageToShow").style.display = "block";
-                    }
-                });
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuba — PuraAventura</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500&family=Libre+Baskerville:ital@1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --rust: #C4501A;
+    --teal: #1A7A7A;
+    --cream: #F5EFE0;
+    --dark: #0F0B06;
+    --sand: #E8D5A3;
+    --green: #2D5A3D;
+  }
 
-        // Vérifier chaque 2 secondes si l'image doit être affichée
-        setInterval(checkForImage, 2000);
-    </script>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--dark);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--gold);
+    border-radius: 50%;
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-trail {
+    width: 36px; height: 36px;
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.35s ease;
+    opacity: 0.5;
+  }
+
+  /* ---- HERO ---- */
+  #hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 8vw;
+    position: relative;
+    overflow: hidden;
+    background: var(--dark);
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 80% 60% at 70% 50%, rgba(201,168,76,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 20% 80%, rgba(196,80,26,0.12) 0%, transparent 50%);
+    z-index: 0;
+  }
+
+  .hero-lines {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .hero-lines::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 70vw;
+    height: 70vw;
+    border: 1px solid rgba(201,168,76,0.12);
+    border-radius: 50%;
+    animation: rotate 30s linear infinite;
+  }
+  .hero-lines::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: 5%;
+    width: 50vw;
+    height: 50vw;
+    border: 1px solid rgba(201,168,76,0.07);
+    border-radius: 50%;
+    animation: rotate 20s linear infinite reverse;
+  }
+
+  @keyframes rotate { to { transform: rotate(360deg); } }
+
+  .hero-eyebrow {
+    position: relative;
+    z-index: 2;
+    font-size: clamp(0.65rem, 1.2vw, 0.85rem);
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 1s 0.3s forwards;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    width: 3rem;
+    height: 1px;
+    background: var(--gold);
+    display: block;
+  }
+
+  .hero-title {
+    position: relative;
+    z-index: 2;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(4rem, 11vw, 10rem);
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: -0.03em;
+    opacity: 0;
+    animation: fadeUp 1s 0.5s forwards;
+  }
+
+  .hero-title .line1 { display: block; color: var(--cream); }
+  .hero-title .line2 {
+    display: block;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--gold);
+    font-style: italic;
+  }
+
+  .hero-sub {
+    position: relative;
+    z-index: 2;
+    margin-top: 2.5rem;
+    font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+    font-weight: 300;
+    color: rgba(245,239,224,0.65);
+    max-width: 38ch;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeUp 1s 0.8s forwards;
+  }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 1s 1.2s forwards;
+  }
+  .hero-scroll span {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(245,239,224,0.4);
+  }
+  .scroll-line {
+    width: 1px;
+    height: 3.5rem;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.4; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(0.7); }
+  }
+
+  .hero-image-box {
+    position: absolute;
+    right: 6vw;
+    top: 50%;
+    transform: translateY(-50%);
+    width: clamp(220px, 28vw, 420px);
+    aspect-ratio: 3/4;
+    z-index: 1;
+    opacity: 0;
+    animation: fadeLeft 1.2s 0.6s forwards;
+  }
+  .hero-image-box .img-inner {
+    width: 100%;
+    height: 100%;
+    background: rgba(201,168,76,0.06);
+    border: 1px solid rgba(201,168,76,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.8rem;
+    color: rgba(201,168,76,0.35);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-image-box .img-inner::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px dashed rgba(201,168,76,0.15);
+  }
+  .hero-image-box .img-inner svg {
+    width: 40px;
+    opacity: 0.3;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeLeft {
+    from { opacity: 0; transform: translate(40px, -50%); }
+    to { opacity: 1; transform: translate(0, -50%); }
+  }
+
+  /* ---- NAV ---- */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.5rem 8vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    mix-blend-mode: normal;
+  }
+  nav::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(15,11,6,0.8), transparent);
+    pointer-events: none;
+  }
+  .nav-logo {
+    position: relative;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    text-decoration: none;
+  }
+  .nav-links {
+    position: relative;
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+  .nav-links a {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(245,239,224,0.6);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+
+  /* ---- SECTION BASE ---- */
+  section {
+    padding: 10vh 8vw;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-label::before {
+    content: '';
+    width: 2.5rem; height: 1px;
+    background: var(--gold);
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    margin-bottom: 3rem;
+  }
+
+  /* ---- WHY CUBA ---- */
+  #why {
+    background: var(--cream);
+    color: var(--dark);
+    clip-path: polygon(0 4%, 100% 0, 100% 96%, 0 100%);
+    margin: -2px 0;
+    padding: 14vh 8vw;
+  }
+  #why .section-label { color: var(--rust); }
+  #why .section-label::before { background: var(--rust); }
+  #why .section-title { color: var(--dark); }
+
+  .why-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .why-text p {
+    font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+    line-height: 1.85;
+    color: rgba(15,11,6,0.75);
+    margin-bottom: 1.5rem;
+  }
+
+  .culture-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 2rem;
+  }
+  .pill {
+    padding: 0.4rem 1.1rem;
+    border: 1.5px solid var(--rust);
+    border-radius: 99px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    color: var(--rust);
+    transition: all 0.3s;
+  }
+  .pill:hover { background: var(--rust); color: white; }
+
+  .why-visual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1rem;
+  }
+  .why-img {
+    background: rgba(196,80,26,0.08);
+    border: 1px solid rgba(196,80,26,0.2);
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.6rem;
+    color: rgba(196,80,26,0.4);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.4s;
+  }
+  .why-img:hover { transform: scale(0.97); }
+  .why-img:first-child {
+    grid-column: 1 / -1;
+    aspect-ratio: 2/1;
+  }
+  .why-img svg { width: 30px; opacity: 0.3; }
+
+  /* ---- ITINERARY ---- */
+  #itinerary {
+    background: var(--dark);
+    padding: 14vh 8vw;
+  }
+
+  .days-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .day-block {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0 3rem;
+    position: relative;
+    padding-bottom: 5rem;
+    opacity: 0;
+    transform: translateY(50px);
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .day-block.visible { opacity: 1; transform: translateY(0); }
+
+  .day-number-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .day-badge {
+    width: 80px;
+    height: 80px;
+    border: 1.5px solid var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    background: var(--dark);
+  }
+  .day-badge span:first-child {
+    font-size: 0.5rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .day-badge span:last-child {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--gold);
+  }
+  .day-line {
+    width: 1px;
+    flex: 1;
+    background: linear-gradient(to bottom, rgba(201,168,76,0.4), rgba(201,168,76,0.05));
+    margin-top: 1rem;
+  }
+
+  .day-content {
+    padding-top: 0.8rem;
+  }
+  .day-location {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .day-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+    line-height: 1.1;
+  }
+  .day-desc {
+    font-size: clamp(0.88rem, 1.2vw, 1rem);
+    line-height: 1.9;
+    color: rgba(245,239,224,0.65);
+    max-width: 65ch;
+    margin-bottom: 1.5rem;
+  }
+
+  .activity-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+  }
+  .activity-tag {
+    padding: 0.35rem 0.9rem;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 4px;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: rgba(201,168,76,0.8);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .activity-tag::before {
+    content: '◆';
+    font-size: 0.4rem;
+    color: var(--gold);
+  }
+
+  .day-image {
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 16/9;
+    background: rgba(201,168,76,0.04);
+    border: 1px solid rgba(201,168,76,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.6rem;
+    color: rgba(201,168,76,0.3);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    position: relative;
+  }
+  .day-image::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px dashed rgba(201,168,76,0.1);
+  }
+  .day-image svg { width: 28px; opacity: 0.25; }
+
+  /* ---- HIGHLIGHTS MARQUEE ---- */
+  #marquee-section {
+    padding: 0;
+    background: var(--gold);
+    overflow: hidden;
+  }
+  .marquee-track {
+    display: flex;
+    gap: 0;
+    width: max-content;
+    animation: marquee 25s linear infinite;
+    padding: 1rem 0;
+  }
+  @keyframes marquee {
+    to { transform: translateX(-50%); }
+  }
+  .marquee-item {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 0 2rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dark);
+    white-space: nowrap;
+  }
+  .marquee-dot {
+    width: 5px; height: 5px;
+    background: var(--dark);
+    border-radius: 50%;
+    opacity: 0.4;
+  }
+
+  /* ---- VARADERO / CLOSING ---- */
+  #closing {
+    background: linear-gradient(135deg, var(--teal) 0%, #0d3d3d 100%);
+    padding: 16vh 8vw;
+    position: relative;
+    overflow: hidden;
+  }
+  #closing::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -10%;
+    width: 60vw; height: 60vw;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 50%;
+  }
+  #closing::after {
+    content: '';
+    position: absolute;
+    bottom: -20%;
+    left: -5%;
+    width: 40vw; height: 40vw;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 50%;
+  }
+
+  .closing-inner {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  .closing-text .section-label { color: rgba(255,255,255,0.5); }
+  .closing-text .section-label::before { background: rgba(255,255,255,0.5); }
+  .closing-text .section-title { color: white; }
+  .closing-text p {
+    font-size: clamp(0.9rem, 1.2vw, 1rem);
+    line-height: 1.9;
+    color: rgba(255,255,255,0.65);
+    max-width: 48ch;
+    margin-bottom: 2.5rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .stat-card {
+    padding: 1.5rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s, background 0.3s;
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    background: rgba(255,255,255,0.1);
+  }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: white;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+  .stat-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* ---- FOOTER ---- */
+  footer {
+    background: var(--dark);
+    border-top: 1px solid rgba(201,168,76,0.15);
+    padding: 4rem 8vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: var(--gold);
+  }
+  .footer-text {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: rgba(245,239,224,0.3);
+    text-align: center;
+  }
+  .footer-mark {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: rgba(245,239,224,0.3);
+  }
+
+  /* ---- SCROLL REVEAL ---- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.35s; }
+
+  /* ---- PARALLAX SHAPES ---- */
+  .float-shape {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ---- MEDIA ---- */
+  @media (max-width: 768px) {
+    .why-grid, .closing-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+    .why-visual { display: none; }
+    nav ul { display: none; }
+    .day-block { grid-template-columns: 60px 1fr; gap: 0 1.5rem; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+  }
+</style>
 </head>
 <body>
-    <div class="rien">
-        <img id="dynamicImage" src="image1.jpg" alt="spiderman" style="display:none;">
+
+<!-- Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<!-- Nav -->
+<nav>
+  <a href="#" class="nav-logo">PuraAventura</a>
+  <ul class="nav-links">
+    <li><a href="#why">Why Cuba</a></li>
+    <li><a href="#itinerary">Itinerary</a></li>
+    <li><a href="#closing">Highlights</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-lines"></div>
+
+  <div class="hero-eyebrow">PuraAventura Presents</div>
+  <h1 class="hero-title">
+    <span class="line1">The Heart</span>
+    <span class="line2">of Cuba</span>
+  </h1>
+  <p class="hero-sub">A week-long journey through the most vibrant island of the Caribbean — culture, nature, and soul.</p>
+
+  <div class="hero-image-box">
+    <div class="img-inner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+      </svg>
+      Add your photo
     </div>
-    <div class="afficheM">
-        <img src="image1.jpg" alt="affiche" style="display:none;" id="imageToShow">
+  </div>
+
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div id="marquee-section">
+  <div class="marquee-track">
+    <div class="marquee-item">La Havane <span class="marquee-dot"></span></div>
+    <div class="marquee-item">Viñales <span class="marquee-dot"></span></div>
+    <div class="marquee-item">Varadero <span class="marquee-dot"></span></div>
+    <div class="marquee-item">Salsa & Rumba <span class="marquee-dot"></span></div>
+    <div class="marquee-item">Cigars & Culture <span class="marquee-dot"></span></div>
+    <div class="marquee-item">Colonial Heritage <span class="marquee-dot"></span></div>
+    <div class="marquee-item">Caribbean Soul <span class="marquee-dot"></span></div>
+    <div class="marquee-item">La Havane <span class="marquee-dot"></span></div>
+    <div class="marquee-item">Viñales <span class="marquee-dot"></span></div>
+    <div class="marquee-item">Varadero <span class="marquee-dot"></span></div>
+    <div class="marquee-item">Salsa & Rumba <span class="marquee-dot"></span></div>
+    <div class="marquee-item">Cigars & Culture <span class="marquee-dot"></span></div>
+    <div class="marquee-item">Colonial Heritage <span class="marquee-dot"></span></div>
+    <div class="marquee-item">Caribbean Soul <span class="marquee-dot"></span></div>
+  </div>
+</div>
+
+<!-- WHY CUBA -->
+<section id="why">
+  <div class="section-label reveal">Why Cuba?</div>
+  <h2 class="section-title reveal reveal-delay-1">A Gem in<br>the Caribbean</h2>
+
+  <div class="why-grid">
+    <div class="why-text reveal reveal-delay-2">
+      <p>Cuba is unlike any other destination on Earth — a living museum where colonial architecture meets revolutionary spirit, where the rhythms of <em>son</em>, salsa, and rumba pour from every corner.</p>
+      <p>Rooted in indigenous Taíno traditions, shaped by Spanish colonization since 1492, and infused with rich African heritage, Cuba's culture is a breathtaking tapestry of music, dance, art, and cuisine.</p>
+      <p>From the colorful streets of Havana to the lush valleys of Viñales and the turquoise shores of Varadero — every corner of this island tells a story.</p>
+      <div class="culture-pills">
+        <span class="pill">Son & Salsa</span>
+        <span class="pill">Colonial Architecture</span>
+        <span class="pill">Ropa Vieja</span>
+        <span class="pill">Lechón Asado</span>
+        <span class="pill">Vintage Cars</span>
+        <span class="pill">Cigars</span>
+      </div>
     </div>
+
+    <div class="why-visual reveal reveal-delay-3">
+      <div class="why-img">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Havana streets
+      </div>
+      <div class="why-img">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Local cuisine
+      </div>
+      <div class="why-img">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Music & dance
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE 2 -->
+<div id="marquee-section" style="background: var(--dark); border-top: 1px solid rgba(201,168,76,0.1); border-bottom: 1px solid rgba(201,168,76,0.1);">
+  <div class="marquee-track" style="animation-direction: reverse; padding: 0.8rem 0;">
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 1 — Havana <span class="marquee-dot" style="background:var(--gold)"></span></div>
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 2 — Old Havana <span class="marquee-dot" style="background:var(--gold)"></span></div>
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 3 — Viñales <span class="marquee-dot" style="background:var(--gold)"></span></div>
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 4 — Tobacco & Caves <span class="marquee-dot" style="background:var(--gold)"></span></div>
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 5 — Varadero <span class="marquee-dot" style="background:var(--gold)"></span></div>
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 6 — Ocean & Leisure <span class="marquee-dot" style="background:var(--gold)"></span></div>
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 7 — Farewell <span class="marquee-dot" style="background:var(--gold)"></span></div>
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 1 — Havana <span class="marquee-dot" style="background:var(--gold)"></span></div>
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 2 — Old Havana <span class="marquee-dot" style="background:var(--gold)"></span></div>
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 3 — Viñales <span class="marquee-dot" style="background:var(--gold)"></span></div>
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 4 — Tobacco & Caves <span class="marquee-dot" style="background:var(--gold)"></span></div>
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 5 — Varadero <span class="marquee-dot" style="background:var(--gold)"></span></div>
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 6 — Ocean & Leisure <span class="marquee-dot" style="background:var(--gold)"></span></div>
+    <div class="marquee-item" style="color: var(--gold); font-size: 0.75rem;">Day 7 — Farewell <span class="marquee-dot" style="background:var(--gold)"></span></div>
+  </div>
+</div>
+
+<!-- ITINERARY -->
+<section id="itinerary">
+  <div class="section-label reveal">The Journey</div>
+  <h2 class="section-title reveal reveal-delay-1">Your Week<br>in Cuba</h2>
+
+  <div class="days-container">
+
+    <!-- DAY 1-2 -->
+    <div class="day-block">
+      <div class="day-number-col">
+        <div class="day-badge">
+          <span>Day</span>
+          <span>1–2</span>
+        </div>
+        <div class="day-line"></div>
+      </div>
+      <div class="day-content">
+        <div class="day-location">Havana, Cuba</div>
+        <h3 class="day-title">Arrival & Discovery<br>of the Capital</h3>
+        <p class="day-desc">Touch down in Havana and be swept into the heart of the city. Settle into your hotel in the historic center, then step out into La Habana Vieja — a UNESCO World Heritage maze of colorful façades, ancient plazas, and the irresistible pulse of Cuban street life.</p>
+        <p class="day-desc">On day two, explore the iconic Plaza de la Catedral, wander through vibrant local markets, and end the afternoon in the most Cuban way possible: cruising the city in a vintage American car, windows down, music up.</p>
+        <div class="activity-list">
+          <span class="activity-tag">La Habana Vieja</span>
+          <span class="activity-tag">Plaza de la Catedral</span>
+          <span class="activity-tag">Vintage Car Tour</span>
+          <span class="activity-tag">Local Markets</span>
+          <span class="activity-tag">Street Music</span>
+        </div>
+        <div class="day-image">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Add your Havana photo
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 3-4 -->
+    <div class="day-block">
+      <div class="day-number-col">
+        <div class="day-badge">
+          <span>Day</span>
+          <span>3–4</span>
+        </div>
+        <div class="day-line"></div>
+      </div>
+      <div class="day-content">
+        <div class="day-location">Viñales Valley</div>
+        <h3 class="day-title">Nature &<br>Cuban Culture</h3>
+        <p class="day-desc">Three hours west of Havana, the dramatic mogote mountains of Viñales rise from lush tobacco fields. Hike through one of Cuba's most breathtaking landscapes in the morning — a scene unchanged for centuries.</p>
+        <p class="day-desc">Visit a working tobacco plantation and watch farmers hand-roll the famous Cuban cigars, then descend into the Cueva del Indio — an underground river cave explored partly by boat. The day ends with artisan crafts and local encounters in the village.</p>
+        <div class="activity-list">
+          <span class="activity-tag">Mogote Hike</span>
+          <span class="activity-tag">Tobacco Plantation</span>
+          <span class="activity-tag">Cueva del Indio</span>
+          <span class="activity-tag">Boat Ride</span>
+          <span class="activity-tag">Local Crafts</span>
+        </div>
+        <div class="day-image">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Add your Viñales photo
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 5-7 -->
+    <div class="day-block">
+      <div class="day-number-col">
+        <div class="day-badge">
+          <span>Day</span>
+          <span>5–7</span>
+        </div>
+        <div class="day-line" style="background: linear-gradient(to bottom, rgba(201,168,76,0.4), transparent);"></div>
+      </div>
+      <div class="day-content">
+        <div class="day-location">Varadero</div>
+        <h3 class="day-title">Sun, Sea &<br>Farewell</h3>
+        <p class="day-desc">Cuba's premier beach resort awaits. Varadero stretches along a turquoise peninsula with some of the finest white sand in the Caribbean. Mornings are for action — snorkeling, kayaking, beach volleyball — while afternoons drift lazily along the shore.</p>
+        <p class="day-desc">A boat excursion takes you out to discover the marine life of the peninsula before your final night. On the last morning, return to Havana for a few final souvenirs and one last taste of the Cuban spirit before your flight home.</p>
+        <div class="activity-list">
+          <span class="activity-tag">Snorkeling</span>
+          <span class="activity-tag">Kayaking</span>
+          <span class="activity-tag">Boat Excursion</span>
+          <span class="activity-tag">Beach Volleyball</span>
+          <span class="activity-tag">Marine Wildlife</span>
+        </div>
+        <div class="day-image">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Add your Varadero photo
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CLOSING STATS -->
+<section id="closing">
+  <div class="closing-inner">
+    <div class="closing-text">
+      <div class="section-label reveal">The Numbers</div>
+      <h2 class="section-title reveal reveal-delay-1">One Week.<br>Three Worlds.</h2>
+      <p class="reveal reveal-delay-2">From the colonial grandeur of Havana to the wild nature of Viñales and the crystalline waters of Varadero — this itinerary is designed to give you the full soul of Cuba in seven unforgettable days.</p>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card reveal">
+        <div class="stat-num">7</div>
+        <div class="stat-label">Days of Adventure</div>
+      </div>
+      <div class="stat-card reveal reveal-delay-1">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Iconic Regions</div>
+      </div>
+      <div class="stat-card reveal reveal-delay-2">
+        <div class="stat-num">12+</div>
+        <div class="stat-label">Curated Activities</div>
+      </div>
+      <div class="stat-card reveal reveal-delay-3">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Memories Made</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">PuraAventura</div>
+  <div class="footer-text">Cuba Expedition · 2025 Presentation</div>
+  <div class="footer-mark">Crafted with ♥</div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const trail = document.getElementById('cursorTrail');
+  let mx = 0, my = 0, tx = 0, ty = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 6 + 'px';
+    cursor.style.top = my - 6 + 'px';
+  });
+
+  function animateTrail() {
+    tx += (mx - tx) * 0.12;
+    ty += (my - ty) * 0.12;
+    trail.style.left = tx - 18 + 'px';
+    trail.style.top = ty - 18 + 'px';
+    requestAnimationFrame(animateTrail);
+  }
+  animateTrail();
+
+  document.querySelectorAll('a, button, .pill, .why-img, .stat-card, .activity-tag').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.transform = 'scale(2.5)';
+      trail.style.transform = 'scale(0.6)';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.transform = 'scale(1)';
+      trail.style.transform = 'scale(1)';
+    });
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal, .day-block');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Smooth parallax on hero shapes
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    const heroLines = document.querySelector('.hero-lines');
+    if (heroLines) {
+      heroLines.style.transform = `translateY(${y * 0.25}px)`;
+    }
+  });
+</script>
 </body>
 </html>
